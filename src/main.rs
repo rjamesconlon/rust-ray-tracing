@@ -1,5 +1,8 @@
 mod colour;
+mod hittable;
+mod hittable_list;
 mod ray;
+mod sphere;
 mod vector;
 use image::{ImageBuffer, Rgb, RgbImage};
 
