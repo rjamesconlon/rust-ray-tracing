@@ -1,15 +1,19 @@
-use crate::hittable;
-use crate::ray;
-use crate::vector;
+use crate::lib::{hittable, ray, vector};
 use std::rc;
 
-struct hittable_list {
+pub struct HittableList {
   pub objects: Vec<rc::Rc<dyn hittable::Hittable>>,
 }
 
-impl hittable_list {
-  pub fn new(&mut self, object: rc::Rc<dyn hittable::Hittable>) -> hittable_list {
-    let mut h = hittable_list {
+impl HittableList {
+  pub fn new_empty() -> HittableList {
+    HittableList {
+      objects: Vec::new(),
+    }
+  }
+
+  pub fn new(&mut self, object: rc::Rc<dyn hittable::Hittable>) -> HittableList {
+    let mut h = HittableList {
       objects: Vec::new(),
     };
 
@@ -27,7 +31,7 @@ impl hittable_list {
   }
 }
 
-impl hittable::Hittable for hittable_list {
+impl hittable::Hittable for HittableList {
   fn hit(
     &self,
     r: &ray::Ray,

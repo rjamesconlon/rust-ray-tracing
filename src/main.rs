@@ -1,11 +1,8 @@
-mod colour;
-mod hittable;
-mod hittable_list;
-mod ray;
-mod sphere;
-mod vector;
+mod lib;
 use image::{ImageBuffer, Rgb, RgbImage};
-
+use lib::{hittable_list, ray, sphere, vector};
+use std::rc;
+//
 // img dimensions
 const ASPECT_RATIO: f64 = 16.0 / 9.0;
 const WIDTH: usize = 400;
@@ -38,6 +35,18 @@ fn main() {
   // make image buffer
   let mut buffer: RgbImage = ImageBuffer::new(WIDTH as u32, HEIGHT as u32);
 
+  // make hit world
+  let mut world = hittable_list::HittableList::new_empty();
+
+  world.add(rc::Rc::new(sphere::Sphere::new(
+    vector::Vector::new(0.0, 0.0, -1.0),
+    0.8,
+  )));
+  world.add(rc::Rc::new(sphere::Sphere::new(
+    vector::Vector::new(0.0, -100.5, -1.0),
+    100.0,
+  )));
+
   // progress counting
   let mut count = 0;
   let max = WIDTH * HEIGHT;
@@ -52,7 +61,7 @@ fn main() {
     // dbg!(ray_direction);
     let ray: ray::Ray = ray::Ray::new(camera_center, ray_direction);
 
-    let (r, g, b) = ray.ray_colour();
+    let (r, g, b) = ray.ray_colour(&world);
     *pixel = Rgb([r, g, b]);
 
     count += 1;

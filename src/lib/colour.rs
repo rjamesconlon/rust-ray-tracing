@@ -1,4 +1,4 @@
-use crate::vector::Vector;
+use crate::lib::vector::Vector;
 
 pub fn get_colour(v: &Vector) -> (u8, u8, u8) {
   (

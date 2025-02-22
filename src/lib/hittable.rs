@@ -1,5 +1,4 @@
-use crate::ray;
-use crate::vector;
+use crate::lib::{ray, vector};
 
 pub struct HitRecord {
   pub point: vector::Vector,

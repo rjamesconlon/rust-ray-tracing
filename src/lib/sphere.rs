@@ -1,8 +1,8 @@
-use crate::hittable;
-use crate::ray::Ray;
-use crate::vector::Vector;
+use crate::lib::hittable;
+use crate::lib::ray::Ray;
+use crate::lib::vector::Vector;
 
-struct Sphere {
+pub struct Sphere {
   pub center: Vector,
   pub radius: f64,
 }
