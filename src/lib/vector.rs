@@ -1,3 +1,4 @@
+use crate::lib::utility;
 use std::ops;
 
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -30,6 +31,41 @@ impl Vector {
 
   pub fn unit_vector(&self) -> Vector {
     *self / self.length()
+  }
+
+  pub fn random_unit_vector() -> Vector {
+    loop {
+      let p = Vector::random_df();
+      let lensq = p.length_squared();
+      if 1e-160 < lensq && lensq <= 1.0 {
+        return p / lensq.sqrt();
+      }
+    }
+  }
+
+  pub fn random_on_hemisphere(&self) -> Vector {
+    let on_unit_sphere = Vector::random_unit_vector();
+    if (on_unit_sphere.dot(self) > 0.0) {
+      return on_unit_sphere;
+    } else {
+      return on_unit_sphere * -1.0;
+    }
+  }
+
+  pub fn random_df() -> Vector {
+    Vector {
+      x: utility::random_df(),
+      y: utility::random_df(),
+      z: utility::random_df(),
+    }
+  }
+
+  pub fn random(min: f64, max: f64) -> Vector {
+    Vector {
+      x: utility::random(min, max),
+      y: utility::random(min, max),
+      z: utility::random(min, max),
+    }
   }
 }
 

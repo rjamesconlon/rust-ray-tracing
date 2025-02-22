@@ -106,7 +106,7 @@ impl Camera {
 
       for i in 0..=self.samples_per_pixel {
         let r = self.get_ray(x, y);
-        pixel_colour = pixel_colour + r.ray_colour(world);
+        pixel_colour = pixel_colour + Camera::ray_colour(&r, world);
       }
 
       let (r, g, b) = colour::get_colour(&(pixel_colour * self.pixel_samples_scale));
@@ -136,7 +136,7 @@ impl Camera {
     vector::Vector::new(utility::random_df() - 0.5, utility::random_df() - 0.5, 0.0)
   }
 
-  pub fn ray_colour(r: &ray::Ray, world: &dyn hittable::Hittable) -> (u8, u8, u8) {
+  pub fn ray_colour(r: &ray::Ray, world: &dyn hittable::Hittable) -> vector::Vector {
     let mut hit_rec = hittable::HitRecord::new(
       vector::Vector::new(0.0, 0.0, 0.0),
       vector::Vector::new(0.0, 0.0, 0.0),
@@ -148,13 +148,13 @@ impl Camera {
       interval::Interval::new(0.0, utility::INFINITY),
       &mut hit_rec,
     ) {
-      return colour::get_colour(&((hit_rec.normal + vector::Vector::new(1.0, 1.0, 1.0)) * 0.5));
+      let direction = hit_rec.normal.random_on_hemisphere();
+      return Camera::ray_colour(&ray::Ray::new(hit_rec.point, direction), world) * 0.5;
     } else {
       let unit_dir = vector::Vector::unit_vector(&r.dir);
       let a = (unit_dir.y + 1.0) * 0.5;
-      colour::get_colour(&{
-        vector::Vector::new(1.0, 1.0, 1.0) * (1.0 - a) + vector::Vector::new(0.5, 0.7, 1.0) * a
-      })
+
+      vector::Vector::new(1.0, 1.0, 1.0) * (1.0 - a) + vector::Vector::new(0.5, 0.7, 1.0) * a
     }
   }
 }
