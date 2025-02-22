@@ -1,4 +1,4 @@
-use crate::lib::{colour, hittable, utility, vector};
+use crate::lib::{colour, hittable, interval, utility, vector};
 
 pub struct Ray {
   pub orig: vector::Vector,
@@ -21,7 +21,11 @@ impl Ray {
       0.0,
       false,
     );
-    if world.hit(self, 0.0, utility::INFINITY, &mut hit_rec) {
+    if world.hit(
+      self,
+      interval::Interval::new(0.0, utility::INFINITY),
+      &mut hit_rec,
+    ) {
       return colour::get_colour(&((hit_rec.normal + vector::Vector::new(1.0, 1.0, 1.0)) * 0.5));
     } else {
       let unit_dir = vector::Vector::unit_vector(&self.dir);

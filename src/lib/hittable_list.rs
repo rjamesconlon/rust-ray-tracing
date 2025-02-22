@@ -1,4 +1,4 @@
-use crate::lib::{hittable, ray, vector};
+use crate::lib::{hittable, interval, ray, vector};
 use std::rc;
 
 pub struct HittableList {
@@ -35,12 +35,11 @@ impl hittable::Hittable for HittableList {
   fn hit(
     &self,
     r: &ray::Ray,
-    ray_min: f64,
-    ray_max: f64,
+    ray_t: interval::Interval,
     hit_rec: &mut hittable::HitRecord,
   ) -> bool {
     let mut hit_anything = false;
-    let mut closest_so_far = ray_max;
+    let mut closest_so_far = ray_t.max;
 
     for object in self.objects.iter() {
       let mut temp_rec = hittable::HitRecord::new(
@@ -49,7 +48,11 @@ impl hittable::Hittable for HittableList {
         0.0,
         false,
       );
-      if object.hit(r, ray_min, closest_so_far, &mut temp_rec) {
+      if object.hit(
+        r,
+        interval::Interval::new(ray_t.min, closest_so_far),
+        &mut temp_rec,
+      ) {
         hit_anything = true;
         closest_so_far = temp_rec.t;
         *hit_rec = temp_rec;
