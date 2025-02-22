@@ -14,7 +14,7 @@ impl Ray {
     self.orig + (self.dir * t)
   }
 
-  pub fn ray_colour(&self, world: &dyn hittable::Hittable) -> (u8, u8, u8) {
+  pub fn ray_colour(&self, world: &dyn hittable::Hittable) -> vector::Vector {
     let mut hit_rec = hittable::HitRecord::new(
       vector::Vector::new(0.0, 0.0, 0.0),
       vector::Vector::new(0.0, 0.0, 0.0),
@@ -26,13 +26,12 @@ impl Ray {
       interval::Interval::new(0.0, utility::INFINITY),
       &mut hit_rec,
     ) {
-      return colour::get_colour(&((hit_rec.normal + vector::Vector::new(1.0, 1.0, 1.0)) * 0.5));
+      return (hit_rec.normal + vector::Vector::new(1.0, 1.0, 1.0)) * 0.5;
     } else {
       let unit_dir = vector::Vector::unit_vector(&self.dir);
       let a = (unit_dir.y + 1.0) * 0.5;
-      colour::get_colour(&{
-        vector::Vector::new(1.0, 1.0, 1.0) * (1.0 - a) + vector::Vector::new(0.5, 0.7, 1.0) * a
-      })
+
+      vector::Vector::new(1.0, 1.0, 1.0) * (1.0 - a) + vector::Vector::new(0.5, 0.7, 1.0) * a
     }
   }
 

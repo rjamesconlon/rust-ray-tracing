@@ -6,11 +6,13 @@ pub struct Camera {
   aspect_ratio: f64,
   image_width: usize,
   image_height: usize,
+  samples_per_pixel: u32,
 
   camera_center: vector::Vector,
   pixel00_loc: vector::Vector,
   pixel_delta_u: vector::Vector,
   pixel_delta_v: vector::Vector,
+  pixel_samples_scale: f64,
 }
 
 impl Default for Camera {
@@ -20,10 +22,12 @@ impl Default for Camera {
       aspect_ratio: 16.0 / 9.0,
       image_width: 400,
       image_height: 0,
+      samples_per_pixel: 100,
       camera_center: vector::Vector::new(0.0, 0.0, 0.0),
       pixel00_loc: vector::Vector::new(0.0, 0.0, 0.0),
       pixel_delta_u: vector::Vector::new(0.0, 0.0, 0.0),
       pixel_delta_v: vector::Vector::new(0.0, 0.0, 0.0),
+      pixel_samples_scale: 0.0,
     };
 
     // Initialize computed fields
@@ -35,15 +39,17 @@ impl Default for Camera {
 
 impl Camera {
   // Constructor that initializes the camera with image width and aspect ratio.
-  pub fn new(aspect_ratio: f64, image_width: usize) -> Self {
+  pub fn new(aspect_ratio: f64, image_width: usize, samples_per_pixel: u32) -> Self {
     let mut camera = Camera {
       aspect_ratio,
       image_width,
       image_height: 0,
+      samples_per_pixel,
       camera_center: vector::Vector::new(0.0, 0.0, 0.0),
       pixel00_loc: vector::Vector::new(0.0, 0.0, 0.0),
       pixel_delta_u: vector::Vector::new(0.0, 0.0, 0.0),
       pixel_delta_v: vector::Vector::new(0.0, 0.0, 0.0),
+      pixel_samples_scale: 0.0,
     };
 
     // Initialize computed fields
@@ -74,11 +80,13 @@ impl Camera {
       - viewport_u / 2.0
       - viewport_v / 2.0;
     self.pixel00_loc = viewport_upper_left + ((self.pixel_delta_u + self.pixel_delta_v) * 0.5);
+
+    self.pixel_samples_scale = 1.0 / self.samples_per_pixel as f64;
   }
 }
 
 impl Camera {
-  pub fn render(&self, world: impl hittable::Hittable) {
+  pub fn render(&self, world: &dyn hittable::Hittable) {
     let mut count = 0;
     let max = self.image_width * self.image_height;
 
@@ -94,7 +102,14 @@ impl Camera {
       // dbg!(ray_direction);
       let ray: ray::Ray = ray::Ray::new(self.camera_center, ray_direction);
 
-      let (r, g, b) = ray.ray_colour(&world);
+      let mut pixel_colour = vector::Vector::new(0.0, 0.0, 0.0);
+
+      for i in 0..=self.samples_per_pixel {
+        let r = self.get_ray(x, y);
+        pixel_colour = pixel_colour + r.ray_colour(world);
+      }
+
+      let (r, g, b) = colour::get_colour(&(pixel_colour * self.pixel_samples_scale));
       *pixel = Rgb([r, g, b]);
 
       count += 1;
@@ -103,6 +118,22 @@ impl Camera {
     buffer.save("img.png").unwrap();
 
     println!("DONE!");
+  }
+
+  pub fn get_ray(&self, i: u32, j: u32) -> ray::Ray {
+    let offset = Self::sample_square();
+    let pixel_sample = self.pixel00_loc
+      + (self.pixel_delta_u * (i as f64 + offset.x))
+      + (self.pixel_delta_v * (j as f64 + offset.y));
+
+    let ray_origin = self.camera_center;
+    let ray_direction = pixel_sample - ray_origin;
+
+    ray::Ray::new(ray_origin, ray_direction)
+  }
+
+  pub fn sample_square() -> vector::Vector {
+    vector::Vector::new(utility::random_df() - 0.5, utility::random_df() - 0.5, 0.0)
   }
 
   pub fn ray_colour(r: &ray::Ray, world: &dyn hittable::Hittable) -> (u8, u8, u8) {

@@ -8,7 +8,7 @@ fn main() {
 
   world.add(rc::Rc::new(sphere::Sphere::new(
     vector::Vector::new(0.0, 0.0, -1.0),
-    0.8,
+    0.5,
   )));
   world.add(rc::Rc::new(sphere::Sphere::new(
     vector::Vector::new(0.0, -100.5, -1.0),
@@ -17,5 +17,5 @@ fn main() {
 
   let c = camera::Camera::default();
 
-  c.render(world);
+  c.render(&world);
 }
