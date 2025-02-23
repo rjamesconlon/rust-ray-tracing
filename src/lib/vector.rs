@@ -80,7 +80,7 @@ impl Vector {
   pub fn refract(&self, n: Vector, etai_over_etat: f64) -> Vector {
     let cos_theta = (*self * -1.0).dot(&n).min(1.0);
     let r_out_perp = (*self + (n * cos_theta)) * etai_over_etat;
-    let r_out_parralel = n * -((1.0 - r_out_perp.length_squared()).abs());
+    let r_out_parralel = n * -((1.0 - r_out_perp.length_squared()).abs().sqrt());
     return r_out_perp + r_out_parralel;
   }
 

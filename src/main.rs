@@ -75,8 +75,8 @@ fn main() {
   )));
 
   let aspect_ratio = 16.0 / 9.0;
-  let image_width = 400;
-  let samples_per_pixel = 400;
+  let image_width = 1200;
+  let samples_per_pixel = 500;
   let max_depth = 50;
 
   let lookfrom = vector::Vector::new(13.0, 2.0, 3.0);
