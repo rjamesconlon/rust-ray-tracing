@@ -1,4 +1,4 @@
-use crate::lib::{hittable, interval, ray, vector};
+use crate::lib::{hittable, interval, material, ray, vector};
 use std::rc;
 
 pub struct HittableList {
@@ -42,12 +42,7 @@ impl hittable::Hittable for HittableList {
     let mut closest_so_far = ray_t.max;
 
     for object in self.objects.iter() {
-      let mut temp_rec = hittable::HitRecord::new(
-        vector::Vector::new(0.0, 0.0, 0.0),
-        vector::Vector::new(0.0, 0.0, 0.0),
-        0.0,
-        false,
-      );
+      let mut temp_rec = hittable::HitRecord::new_empty(); // No material yet
       if object.hit(
         r,
         interval::Interval::new(ray_t.min, closest_so_far),

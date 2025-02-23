@@ -67,6 +67,15 @@ impl Vector {
       z: utility::random(min, max),
     }
   }
+
+  pub fn near_zero(&self) -> bool {
+    let s = 1e-8;
+    (self.x < s) && (self.y < s) && (self.z < s)
+  }
+
+  pub fn reflect(&self, n: Vector) -> Vector {
+    *self - (n * (self.dot(&n) * 2.0))
+  }
 }
 
 impl ops::Add for Vector {
@@ -101,6 +110,18 @@ impl ops::Mul<f64> for Vector {
       x: self.x * i,
       y: self.y * i,
       z: self.z * i,
+    }
+  }
+}
+
+impl ops::Mul<Vector> for Vector {
+  type Output = Self;
+
+  fn mul(self, rhs: Self) -> Self::Output {
+    Self {
+      x: self.x * rhs.x,
+      y: self.y * rhs.y,
+      z: self.z * rhs.z,
     }
   }
 }

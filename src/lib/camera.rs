@@ -1,5 +1,6 @@
-use crate::lib::{colour, hittable, interval, ray, utility, vector};
+use crate::lib::{colour, hittable, interval, material, ray, utility, vector};
 use image::{ImageBuffer, Rgb, RgbImage};
+use std::rc;
 
 pub struct Camera {
   // aspect ratio and plane size
@@ -139,19 +140,24 @@ impl Camera {
     if depth <= 0 {
       return vector::Vector::new(0.0, 0.0, 0.0);
     }
-    let mut hit_rec = hittable::HitRecord::new(
-      vector::Vector::new(0.0, 0.0, 0.0),
-      vector::Vector::new(0.0, 0.0, 0.0),
-      0.0,
-      false,
-    );
+    let mut hit_rec = hittable::HitRecord::new_empty(); // No material yet
     if world.hit(
       r,
       interval::Interval::new(0.001, utility::INFINITY),
       &mut hit_rec,
     ) {
-      let direction = hit_rec.normal.random_on_hemisphere();
-      return Camera::ray_colour(&ray::Ray::new(hit_rec.point, direction), depth - 1, world) * 0.5;
+      let mut attenuation = vector::Vector::new(0.0, 0.0, 0.0);
+      let mut scattered = ray::Ray::new(
+        vector::Vector::new(0.0, 0.0, 0.0),
+        vector::Vector::new(0.0, 0.0, 0.0),
+      );
+      if hit_rec
+        .mat
+        .scatter(r, &hit_rec, &mut attenuation, &mut scattered)
+      {
+        return attenuation * Camera::ray_colour(&scattered, depth - 1, world);
+      }
+      return vector::Vector::new(0.0, 0.0, 0.0);
     } else {
       let unit_dir = vector::Vector::unit_vector(&r.dir);
       let a = (unit_dir.y + 1.0) * 0.5;

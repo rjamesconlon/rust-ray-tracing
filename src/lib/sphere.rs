@@ -1,18 +1,33 @@
 use crate::lib::ray::Ray;
 use crate::lib::vector::Vector;
-use crate::lib::{hittable, interval};
+use crate::lib::{hittable, interval, material};
+use std::rc;
 
 pub struct Sphere {
   pub center: Vector,
   pub radius: f64,
+  mat: rc::Rc<dyn material::Material>,
 }
 
 impl Sphere {
-  pub fn new(center: Vector, radius: f64) -> Sphere {
+  pub fn new(center: Vector, radius: f64, mat: rc::Rc<dyn material::Material>) -> Sphere {
     Sphere {
       center,
       radius: radius.max(0.0),
+      mat,
     }
+  }
+}
+
+impl material::Material for Sphere {
+  fn scatter(
+    &self,
+    r_in: &super::ray::Ray,
+    rec: &hittable::HitRecord,
+    attenuation: &mut Vector,
+    scattered: &mut Ray,
+  ) -> bool {
+    return false;
   }
 }
 
@@ -41,6 +56,7 @@ impl hittable::Hittable for Sphere {
     hit.point = r.at(hit.t);
     let outward_normal: Vector = (hit.point - self.center) / self.radius;
     hit.set_face_normal(r, outward_normal);
+    hit.mat = self.mat.clone();
 
     return true;
   }
