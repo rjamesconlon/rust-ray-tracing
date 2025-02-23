@@ -13,6 +13,7 @@ pub struct Camera {
   pixel_delta_u: vector::Vector,
   pixel_delta_v: vector::Vector,
   pixel_samples_scale: f64,
+  max_depth: u32,
 }
 
 impl Default for Camera {
@@ -28,6 +29,7 @@ impl Default for Camera {
       pixel_delta_u: vector::Vector::new(0.0, 0.0, 0.0),
       pixel_delta_v: vector::Vector::new(0.0, 0.0, 0.0),
       pixel_samples_scale: 0.0,
+      max_depth: 50,
     };
 
     // Initialize computed fields
@@ -50,6 +52,7 @@ impl Camera {
       pixel_delta_u: vector::Vector::new(0.0, 0.0, 0.0),
       pixel_delta_v: vector::Vector::new(0.0, 0.0, 0.0),
       pixel_samples_scale: 0.0,
+      max_depth: 50,
     };
 
     // Initialize computed fields
@@ -87,26 +90,22 @@ impl Camera {
 
 impl Camera {
   pub fn render(&self, world: &dyn hittable::Hittable) {
-    let mut count = 0;
+    let mut count = 1;
+    let mut percentage: u8 = 0;
     let max = self.image_width * self.image_height;
 
     let mut buffer: RgbImage = ImageBuffer::new(self.image_width as u32, self.image_height as u32);
     for (x, y, pixel) in buffer.enumerate_pixels_mut() {
-      println!("{count} out of {max}: {x} {y}");
-
-      let pixel_center =
-        self.pixel00_loc + (self.pixel_delta_u * x as f64) + (self.pixel_delta_v * y as f64);
-      let ray_direction = pixel_center - self.camera_center;
-      // dbg!(pixel_center);
-      // dbg!(camera_center);
-      // dbg!(ray_direction);
-      let ray: ray::Ray = ray::Ray::new(self.camera_center, ray_direction);
+      if ((count as f64 / max as f64) * 100.0) as u8 > percentage {
+        println!("percent: {percentage}");
+        percentage = ((count as f64 / max as f64) * 100.0) as u8;
+      }
 
       let mut pixel_colour = vector::Vector::new(0.0, 0.0, 0.0);
 
-      for i in 0..=self.samples_per_pixel {
+      for _ in 0..=self.samples_per_pixel {
         let r = self.get_ray(x, y);
-        pixel_colour = pixel_colour + Camera::ray_colour(&r, world);
+        pixel_colour = pixel_colour + Camera::ray_colour(&r, self.max_depth, world);
       }
 
       let (r, g, b) = colour::get_colour(&(pixel_colour * self.pixel_samples_scale));
@@ -136,7 +135,10 @@ impl Camera {
     vector::Vector::new(utility::random_df() - 0.5, utility::random_df() - 0.5, 0.0)
   }
 
-  pub fn ray_colour(r: &ray::Ray, world: &dyn hittable::Hittable) -> vector::Vector {
+  pub fn ray_colour(r: &ray::Ray, depth: u32, world: &dyn hittable::Hittable) -> vector::Vector {
+    if depth <= 0 {
+      return vector::Vector::new(0.0, 0.0, 0.0);
+    }
     let mut hit_rec = hittable::HitRecord::new(
       vector::Vector::new(0.0, 0.0, 0.0),
       vector::Vector::new(0.0, 0.0, 0.0),
@@ -145,11 +147,11 @@ impl Camera {
     );
     if world.hit(
       r,
-      interval::Interval::new(0.0, utility::INFINITY),
+      interval::Interval::new(0.001, utility::INFINITY),
       &mut hit_rec,
     ) {
       let direction = hit_rec.normal.random_on_hemisphere();
-      return Camera::ray_colour(&ray::Ray::new(hit_rec.point, direction), world) * 0.5;
+      return Camera::ray_colour(&ray::Ray::new(hit_rec.point, direction), depth - 1, world) * 0.5;
     } else {
       let unit_dir = vector::Vector::unit_vector(&r.dir);
       let a = (unit_dir.y + 1.0) * 0.5;
