@@ -14,9 +14,8 @@ fn main() {
     albedo: vector::Vector::new(0.1, 0.2, 0.5),
   });
 
-  let material_left = rc::Rc::new(material::Metal {
-    albedo: vector::Vector::new(0.8, 0.8, 0.8),
-    fuzz: 0.3,
+  let material_left = rc::Rc::new(material::Dialetric {
+    refraction_index: 1.50,
   });
 
   let material_right = rc::Rc::new(material::Metal {

@@ -17,7 +17,7 @@ pub struct Lambertian {
 impl Material for Lambertian {
   fn scatter(
     &self,
-    r_in: &ray::Ray,
+    _r_in: &ray::Ray,
     rec: &hittable::HitRecord,
     attenuation: &mut vector::Vector,
     scattered: &mut ray::Ray,
@@ -52,5 +52,32 @@ impl Material for Metal {
     *scattered = ray::Ray::new(rec.point, reflected);
     *attenuation = self.albedo;
     return scattered.dir.dot(&rec.normal) > 0.0;
+  }
+}
+
+pub struct Dialetric {
+  pub refraction_index: f64,
+}
+
+impl Material for Dialetric {
+  fn scatter(
+    &self,
+    r_in: &ray::Ray,
+    rec: &hittable::HitRecord,
+    attenuation: &mut vector::Vector,
+    scattered: &mut ray::Ray,
+  ) -> bool {
+    *attenuation = vector::Vector::new(1.0, 1.0, 1.0);
+    let ri = if rec.front_face {
+      1.0 / self.refraction_index
+    } else {
+      self.refraction_index
+    };
+
+    let unit_direction = r_in.dir.unit_vector();
+    let refracted = unit_direction.refract(rec.normal, ri);
+
+    *scattered = ray::Ray::new(rec.point, refracted);
+    return true;
   }
 }

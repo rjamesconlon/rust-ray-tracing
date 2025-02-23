@@ -33,7 +33,7 @@ impl HitRecord {
         albedo: vector::Vector::new(0.0, 0.0, 0.0),
       }), // Placeholder, will be overwritten
       t: 0.0,
-      front_face: false,
+      front_face: true,
     }
   }
   pub fn set_face_normal(&mut self, r: &ray::Ray, v: vector::Vector) {
