@@ -95,6 +95,6 @@ impl Dialetric {
   pub fn reflectance(cosine: f64, refraction_index: f64) -> f64 {
     let mut r0 = (1.0 - refraction_index) / (1.0 + refraction_index);
     r0 = r0 * r0;
-    r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
+    r0 + ((1.0 - r0) * ((1.0 - cosine).powi(5)))
   }
 }

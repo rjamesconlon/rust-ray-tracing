@@ -19,6 +19,12 @@ pub struct Camera {
   lookat: vector::Vector,
   vup: vector::Vector,
   vfov: f64,
+
+  defocus_angle: f64,
+  focus_dist: f64,
+
+  defocus_disk_u: vector::Vector,
+  defocus_disk_v: vector::Vector,
 }
 
 impl Default for Camera {
@@ -39,6 +45,10 @@ impl Default for Camera {
       lookat: vector::Vector::new(0.0, 0.0, -1.0),
       vup: vector::Vector::new(0.0, 1.0, 0.0),
       vfov: 90.0,
+      defocus_angle: 0.0,
+      focus_dist: 10.0,
+      defocus_disk_u: vector::Vector::new(0.0, 0.0, 0.0),
+      defocus_disk_v: vector::Vector::new(0.0, 0.0, 0.0),
     };
 
     // Initialize computed fields
@@ -59,6 +69,8 @@ impl Camera {
     lookat: vector::Vector,
     vup: vector::Vector,
     vfov: f64,
+    defocus_angle: f64,
+    focus_dist: f64,
   ) -> Self {
     let mut camera = Camera {
       aspect_ratio,
@@ -75,6 +87,10 @@ impl Camera {
       lookat,
       vup,
       vfov,
+      defocus_angle,
+      focus_dist,
+      defocus_disk_u: vector::Vector::new(0.0, 0.0, 0.0),
+      defocus_disk_v: vector::Vector::new(0.0, 0.0, 0.0),
     };
 
     // Initialize computed fields
@@ -89,11 +105,10 @@ impl Camera {
 
     self.camera_center = self.lookfrom;
 
-    let focal_length = (self.lookfrom - self.lookat).length();
     let theta = utility::deg_to_rad(self.vfov);
     let h = (theta / 2.0).tan();
 
-    let viewport_height = 2.0 * h * focal_length;
+    let viewport_height = 2.0 * h * self.focus_dist;
     let viewport_width = viewport_height * (self.image_width as f64 / self.image_height as f64);
 
     let w = (self.lookfrom - self.lookat).unit_vector();
@@ -109,10 +124,14 @@ impl Camera {
 
     // Calculate the location of the upper left pixel
     let viewport_upper_left =
-      self.camera_center - (w * focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
+      self.camera_center - (w * self.focus_dist) - viewport_u / 2.0 - viewport_v / 2.0;
     self.pixel00_loc = viewport_upper_left + ((self.pixel_delta_u + self.pixel_delta_v) * 0.5);
 
     self.pixel_samples_scale = 1.0 / self.samples_per_pixel as f64;
+
+    let defocus_radius = utility::deg_to_rad(self.defocus_angle / 2.0).tan() * self.focus_dist;
+    self.defocus_disk_u = u * defocus_radius;
+    self.defocus_disk_v = v * defocus_radius;
   }
 }
 
@@ -153,10 +172,19 @@ impl Camera {
       + (self.pixel_delta_u * (i as f64 + offset.x))
       + (self.pixel_delta_v * (j as f64 + offset.y));
 
-    let ray_origin = self.camera_center;
+    let ray_origin = if self.defocus_angle <= 0.0 {
+      self.camera_center
+    } else {
+      self.defocus_disk_sample()
+    };
     let ray_direction = pixel_sample - ray_origin;
 
     ray::Ray::new(ray_origin, ray_direction)
+  }
+
+  pub fn defocus_disk_sample(&self) -> vector::Vector {
+    let p = vector::Vector::random_in_unit_disk();
+    self.camera_center + (self.defocus_disk_u * p.x) + (self.defocus_disk_v * p.y)
   }
 
   pub fn sample_square() -> vector::Vector {

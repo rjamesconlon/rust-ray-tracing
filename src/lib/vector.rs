@@ -91,6 +91,15 @@ impl Vector {
       (self.x * v.y) - (self.y * v.x),
     )
   }
+
+  pub fn random_in_unit_disk() -> Vector {
+    loop {
+      let p = Vector::new(utility::random(-1.0, 1.0), utility::random(-1.0, 1.0), 0.0);
+      if p.length_squared() < 1.0 {
+        return p;
+      }
+    }
+  }
 }
 
 impl ops::Add for Vector {
