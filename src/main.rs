@@ -16,10 +16,12 @@ fn main() {
 
   let material_left = rc::Rc::new(material::Metal {
     albedo: vector::Vector::new(0.8, 0.8, 0.8),
+    fuzz: 0.3,
   });
 
   let material_right = rc::Rc::new(material::Metal {
     albedo: vector::Vector::new(0.8, 0.6, 0.2),
+    fuzz: 1.0,
   });
 
   // ground

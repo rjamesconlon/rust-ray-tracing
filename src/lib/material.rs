@@ -36,6 +36,7 @@ impl Material for Lambertian {
 
 pub struct Metal {
   pub albedo: vector::Vector,
+  pub fuzz: f64,
 }
 
 impl Material for Metal {
@@ -46,9 +47,10 @@ impl Material for Metal {
     attenuation: &mut vector::Vector,
     scattered: &mut ray::Ray,
   ) -> bool {
-    let reflected = r_in.dir.reflect(rec.normal);
+    let reflected =
+      r_in.dir.reflect(rec.normal) + (vector::Vector::random_unit_vector() * self.fuzz);
     *scattered = ray::Ray::new(rec.point, reflected);
     *attenuation = self.albedo;
-    return true;
+    return scattered.dir.dot(&rec.normal) > 0.0;
   }
 }
