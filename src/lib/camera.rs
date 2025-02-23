@@ -15,7 +15,9 @@ pub struct Camera {
   pixel_delta_v: vector::Vector,
   pixel_samples_scale: f64,
   max_depth: u32,
-
+  lookfrom: vector::Vector,
+  lookat: vector::Vector,
+  vup: vector::Vector,
   vfov: f64,
 }
 
@@ -33,6 +35,9 @@ impl Default for Camera {
       pixel_delta_v: vector::Vector::new(0.0, 0.0, 0.0),
       pixel_samples_scale: 0.0,
       max_depth: 50,
+      lookfrom: vector::Vector::new(0.0, 0.0, 0.0),
+      lookat: vector::Vector::new(0.0, 0.0, -1.0),
+      vup: vector::Vector::new(0.0, 1.0, 0.0),
       vfov: 90.0,
     };
 
@@ -45,7 +50,16 @@ impl Default for Camera {
 
 impl Camera {
   // Constructor that initializes the camera with image width and aspect ratio.
-  pub fn new(aspect_ratio: f64, image_width: usize, samples_per_pixel: u32) -> Self {
+  pub fn new(
+    aspect_ratio: f64,
+    image_width: usize,
+    samples_per_pixel: u32,
+    max_depth: u32,
+    lookfrom: vector::Vector,
+    lookat: vector::Vector,
+    vup: vector::Vector,
+    vfov: f64,
+  ) -> Self {
     let mut camera = Camera {
       aspect_ratio,
       image_width,
@@ -56,8 +70,11 @@ impl Camera {
       pixel_delta_u: vector::Vector::new(0.0, 0.0, 0.0),
       pixel_delta_v: vector::Vector::new(0.0, 0.0, 0.0),
       pixel_samples_scale: 0.0,
-      max_depth: 50,
-      vfov: 90.0,
+      max_depth,
+      lookfrom,
+      lookat,
+      vup,
+      vfov,
     };
 
     // Initialize computed fields
@@ -70,27 +87,29 @@ impl Camera {
     self.image_height = (self.image_width as f64 / self.aspect_ratio) as usize;
     self.image_height = self.image_height.max(1);
 
-    let focal_length = 1.0;
+    self.camera_center = self.lookfrom;
 
+    let focal_length = (self.lookfrom - self.lookat).length();
     let theta = utility::deg_to_rad(self.vfov);
     let h = (theta / 2.0).tan();
 
     let viewport_height = 2.0 * h * focal_length;
     let viewport_width = viewport_height * (self.image_width as f64 / self.image_height as f64);
 
-    // Calculate vectors across the horizontal and vertical viewport edges
-    let viewport_u = vector::Vector::new(viewport_width, 0.0, 0.0);
-    let viewport_v = vector::Vector::new(0.0, -viewport_height, 0.0);
+    let w = (self.lookfrom - self.lookat).unit_vector();
+    let u = self.vup.cross(&w);
+    let v = w.cross(&u);
 
+    // Calculate vectors across the horizontal and vertical viewport edges
+    let viewport_u = u * viewport_width;
+    let viewport_v = (v * -1.0) * viewport_height;
     // Calculate horizontal and vertical delta vectors
     self.pixel_delta_u = viewport_u / self.image_width as f64;
     self.pixel_delta_v = viewport_v / self.image_height as f64;
 
     // Calculate the location of the upper left pixel
-    let viewport_upper_left = self.camera_center
-      - vector::Vector::new(0.0, 0.0, focal_length)
-      - viewport_u / 2.0
-      - viewport_v / 2.0;
+    let viewport_upper_left =
+      self.camera_center - (w * focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
     self.pixel00_loc = viewport_upper_left + ((self.pixel_delta_u + self.pixel_delta_v) * 0.5);
 
     self.pixel_samples_scale = 1.0 / self.samples_per_pixel as f64;

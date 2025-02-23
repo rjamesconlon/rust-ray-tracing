@@ -83,6 +83,14 @@ impl Vector {
     let r_out_parralel = n * -((1.0 - r_out_perp.length_squared()).abs());
     return r_out_perp + r_out_parralel;
   }
+
+  pub fn cross(&self, v: &Vector) -> Vector {
+    Vector::new(
+      (self.y * v.z) - (self.z * v.y),
+      (self.z * v.x) - (self.x * v.z),
+      (self.x * v.y) - (self.y * v.x),
+    )
+  }
 }
 
 impl ops::Add for Vector {
