@@ -1,4 +1,4 @@
-use crate::lib::{hittable, ray, vector};
+use crate::lib::{hittable, ray, utility, vector};
 
 pub trait Material {
   fn scatter(
@@ -75,9 +75,26 @@ impl Material for Dialetric {
     };
 
     let unit_direction = r_in.dir.unit_vector();
-    let refracted = unit_direction.refract(rec.normal, ri);
+    let cos_theta = (unit_direction * -1.0).dot(&rec.normal).min(1.0);
+    let sin_theta = (1.0 - (cos_theta * cos_theta)).sqrt();
 
-    *scattered = ray::Ray::new(rec.point, refracted);
+    let cannot_refract = ri * sin_theta > 1.0;
+    let direction =
+      if cannot_refract || Dialetric::reflectance(cos_theta, ri) > utility::random_df() {
+        unit_direction.reflect(rec.normal)
+      } else {
+        unit_direction.refract(rec.normal, ri)
+      };
+
+    *scattered = ray::Ray::new(rec.point, direction);
     return true;
+  }
+}
+
+impl Dialetric {
+  pub fn reflectance(cosine: f64, refraction_index: f64) -> f64 {
+    let mut r0 = (1.0 - refraction_index) / (1.0 + refraction_index);
+    r0 = r0 * r0;
+    r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
   }
 }

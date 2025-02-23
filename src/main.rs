@@ -18,6 +18,10 @@ fn main() {
     refraction_index: 1.50,
   });
 
+  let material_bubble = rc::Rc::new(material::Dialetric {
+    refraction_index: 1.0 / 1.50,
+  });
+
   let material_right = rc::Rc::new(material::Metal {
     albedo: vector::Vector::new(0.8, 0.6, 0.2),
     fuzz: 1.0,
@@ -42,6 +46,13 @@ fn main() {
     vector::Vector::new(-1.0, 0.0, -1.0),
     0.5,
     material_left.clone(),
+  )));
+
+  // bubble sphere
+  world.add(rc::Rc::new(sphere::Sphere::new(
+    vector::Vector::new(-1.0, 0.0, -1.0),
+    0.4,
+    material_bubble.clone(),
   )));
 
   // right sphere
