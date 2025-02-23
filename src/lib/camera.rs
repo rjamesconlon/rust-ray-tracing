@@ -15,6 +15,8 @@ pub struct Camera {
   pixel_delta_v: vector::Vector,
   pixel_samples_scale: f64,
   max_depth: u32,
+
+  vfov: f64,
 }
 
 impl Default for Camera {
@@ -31,6 +33,7 @@ impl Default for Camera {
       pixel_delta_v: vector::Vector::new(0.0, 0.0, 0.0),
       pixel_samples_scale: 0.0,
       max_depth: 50,
+      vfov: 90.0,
     };
 
     // Initialize computed fields
@@ -54,6 +57,7 @@ impl Camera {
       pixel_delta_v: vector::Vector::new(0.0, 0.0, 0.0),
       pixel_samples_scale: 0.0,
       max_depth: 50,
+      vfov: 90.0,
     };
 
     // Initialize computed fields
@@ -67,7 +71,11 @@ impl Camera {
     self.image_height = self.image_height.max(1);
 
     let focal_length = 1.0;
-    let viewport_height = 2.0;
+
+    let theta = utility::deg_to_rad(self.vfov);
+    let h = (theta / 2.0).tan();
+
+    let viewport_height = 2.0 * h * focal_length;
     let viewport_width = viewport_height * (self.image_width as f64 / self.image_height as f64);
 
     // Calculate vectors across the horizontal and vertical viewport edges
