@@ -137,15 +137,11 @@ impl Camera {
 impl Camera {
   pub fn render(&self, world: &dyn hittable::Hittable) {
     let mut count = 1;
-    let mut percentage: u8 = 0;
     let max = self.image_width * self.image_height;
 
     let mut buffer: RgbImage = ImageBuffer::new(self.image_width as u32, self.image_height as u32);
     for (x, y, pixel) in buffer.enumerate_pixels_mut() {
-      if ((count as f64 / max as f64) * 100.0) as u8 > percentage {
-        println!("percent: {percentage}");
-        percentage = ((count as f64 / max as f64) * 100.0) as u8;
-      }
+      println!("count: {count} max: {max}");
 
       let mut pixel_colour = vector::Vector::new(0.0, 0.0, 0.0);
 
