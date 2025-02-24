@@ -1,4 +1,4 @@
-use crate::lib::{colour, hittable, interval, utility, vector};
+use crate::lib::vector;
 
 pub struct Ray {
   pub orig: vector::Vector,

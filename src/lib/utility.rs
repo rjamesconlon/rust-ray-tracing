@@ -1,4 +1,3 @@
-use crate::lib::interval;
 use rand::prelude::*;
 
 pub const PI: f64 = std::f64::consts::PI;

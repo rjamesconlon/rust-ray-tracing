@@ -45,7 +45,7 @@ impl Vector {
 
   pub fn random_on_hemisphere(&self) -> Vector {
     let on_unit_sphere = Vector::random_unit_vector();
-    if (on_unit_sphere.dot(self) > 0.0) {
+    if on_unit_sphere.dot(self) > 0.0 {
       return on_unit_sphere;
     } else {
       return on_unit_sphere * -1.0;

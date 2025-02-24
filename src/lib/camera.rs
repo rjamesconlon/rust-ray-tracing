@@ -1,6 +1,5 @@
-use crate::lib::{colour, hittable, interval, material, ray, utility, vector};
+use crate::lib::{colour, hittable, interval, ray, utility, vector};
 use image::{ImageBuffer, Rgb, RgbImage};
-use std::rc;
 
 pub struct Camera {
   // aspect ratio and plane size

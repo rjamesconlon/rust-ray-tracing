@@ -22,10 +22,10 @@ impl Sphere {
 impl material::Material for Sphere {
   fn scatter(
     &self,
-    r_in: &super::ray::Ray,
-    rec: &hittable::HitRecord,
-    attenuation: &mut Vector,
-    scattered: &mut Ray,
+    _r_in: &super::ray::Ray,
+    _rec: &hittable::HitRecord,
+    _attenuation: &mut Vector,
+    _scattered: &mut Ray,
   ) -> bool {
     return false;
   }
